@@ -23,6 +23,12 @@ def accounts():
 
 
 @click.command()
+def new():
+    """ 引导用户创建新的账户记录 """
+    pass
+
+
+@click.command()
 @click.argument('user')
 @click.argument('password')
 @click.argument('server')
@@ -57,6 +63,7 @@ def load(file, file_type):
     click.echo('accounts info has loaded.')
 
 
+accounts.add_command(new)
 accounts.add_command(add)
 accounts.add_command(load)
 
