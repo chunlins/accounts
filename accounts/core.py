@@ -3,7 +3,7 @@
 
 
 class Password(object):
-
+    """ 存储加密字符串，并提供加密和解密功能 """
     def __init__(self, password):
         if __name__ == '__main__':
             self.value = self.encrypt(password)
@@ -20,20 +20,21 @@ class Password(object):
 
 
 class Account(object):
-    """ Store information of the account
+    """ 存储账户信息
 
     不验证输入信息的正确性，由用户自己确认和核实输入
 
     Parameters
     ----------
-    user: dict or str
-        记录用户基本信息，用户名是必须的。可传入表示用户名的字符串或包含用户名键值对的字典
+    user: list or str
+        记录用户基本信息，至少是必须的，而且可入是多个登陆名
     password: str
         记录账户密码，加密存储
     server: dict or str
-        记录提供该账户服务的公司或机构，登陆时使用的地址是必须的
-    auth: list of dict, optional
-        记录在注册该账户时使用的认证方式，例如注册时的邮箱和电话号码，信息需存放在字典中
+        记录提供该账户服务的公司或机构，登陆时使用的服务地址是必须的
+    auth: dict of authentications, optional
+        记录在注册该账户时使用的认证方式，例如注册时的邮箱和电话号码，信息存放在字典中，
+        可接受键包括： ['phone', 'email', 'qq', 'wechat']
     history: list of dict, optional
         记录账户的改动，在每次对账户进行修改后，将改动前的账户信息记录其中
 
@@ -48,21 +49,22 @@ class Account(object):
         auth: list - [authentications]
         authentications: {'email': 'username@example.com' ... }
         history: list - [account.base]
+
     """
 
     def __init__(self, user, password, server, auth=None, history=None):
         #  init user
-        if isinstance(user, dict):
+        if isinstance(user, list):
             self.user = user
         else:
-            self.user = {'name': user}
+            self.user = [user]
         # init password
         self.password = Password(password)
         # init server
         if isinstance(server, dict):
-            self.server = {'url': server}
-        else:
             self.server = server
+        else:
+            self.server = {'url': server}
         # init history
         if history is None:
             self.history = []
@@ -86,12 +88,12 @@ class Account(object):
             return False
 
     def __str__(self):
-        return '{user} in {server}'.format(user=self.user, server=self.server)
+        return '{user} login {server}'.format(user=self.user, server=self.server.get('url'))
 
-    def dump(self):
+    def todict(self):
         return dict(
             user=self.user,
-            password=self.password,
+            password=self.password.value,
             server=self.server,
             history=self.history
         )

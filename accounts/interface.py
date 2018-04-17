@@ -25,6 +25,19 @@ def accounts():
 @click.command()
 def new():
     """ 引导用户创建新的账户记录 """
+    prompt_input_user = '请输入可用于登陆的用户名。如果有多个，请使用空格分隔：\n'
+    prompt_input_password = '请输入登陆时使用的密码：\n'
+    prompt_input_server = '请输入登陆时使用网站链接：\n'
+    promt_input_auth = '请输入账户的验证方式：\n'
+
+    user = input(prompt_input_user).split()
+    password = input(prompt_input_password).strip()
+    server = input(prompt_input_server).strip()
+
+    account = Account(user, password, server)
+    print(account)
+
+
     pass
 
 
