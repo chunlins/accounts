@@ -1,22 +1,16 @@
 # -*- coding: utf-8 -*-
 """ Console app for managing accounts """
+import json
 
 
-class Password(object):
-    """ 存储加密字符串，并提供加密和解密功能 """
-    def __init__(self, password):
-        if __name__ == '__main__':
-            self.value = self.encrypt(password)
+def encrypt(password):
+    value = password
+    return value
 
-    @staticmethod
-    def encrypt(password):
-        value = password
-        return value
 
-    @staticmethod
-    def deciphering(value):
-        password = value
-        return password
+def deciphering(value):
+    password = value
+    return password
 
 
 class Account(object):
@@ -29,7 +23,7 @@ class Account(object):
     user: list or str
         记录用户基本信息，至少是必须的，而且可入是多个登陆名
     password: str
-        记录账户密码，加密存储
+        记录加密后的账户密码
     server: dict or str
         记录提供该账户服务的公司或机构，登陆时使用的服务地址是必须的
     auth: dict of authentications, optional
@@ -53,28 +47,11 @@ class Account(object):
     """
 
     def __init__(self, user, password, server, auth=None, history=None):
-        #  init user
-        if isinstance(user, list):
-            self.user = user
-        else:
-            self.user = [user]
-        # init password
-        self.password = Password(password)
-        # init server
-        if isinstance(server, dict):
-            self.server = server
-        else:
-            self.server = {'url': server}
-        # init history
-        if history is None:
-            self.history = []
-        else:
-            self.history = history
-        # init auth
-        if auth is None:
-            self.auth = {}
-        else:
-            self.auth = auth
+        self.user = user if isinstance(user, list) else [user]
+        self.password = password
+        self.server = server if isinstance(server, dict) else {'url': server}
+        self.history = history if history else list()
+        self.auth = auth if auth else dict()
 
     def __eq__(self, other):
         if isinstance(other, Account):
@@ -88,14 +65,16 @@ class Account(object):
             return False
 
     def __str__(self):
-        return '{user} login {server}'.format(user=self.user, server=self.server.get('url'))
+        return '{user} login {server}'.format(user=' '.join(self.user),
+                                              server=self.server.get('url'))
 
     def todict(self):
         return dict(
             user=self.user,
-            password=self.password.value,
+            password=self.password,
             server=self.server,
-            history=self.history
+            history=self.history,
+            auth=self.auth
         )
 
 
@@ -111,21 +90,52 @@ class Account(object):
 
 
 class AccountManager(object):
-    """ Collections contains Account instances """
+    """ Collections contains Account instances
+
+    Parameters
+    ----------
+    _data : list
+        Store account data
+
+    """
 
     def __init__(self):
-        self.data = []
+        self._data = []
+
+    def __iter__(self):
+        return (account for account in self._data)
 
     def __str__(self):
-        return str(self.data)
+        return str(self._data)
+
+    @property
+    def amount(self):
+        return len(self._data)
 
     def add(self, account):
-        self.data.append(account)
+        self._data.append(account)
 
-    @staticmethod
-    def _load_from_json(filename):
-        return 'load from json'
+# Data Persistent: load from and dump to file(json)
 
-    def load(self, accounts, file='json'):
-        if file == 'json':
-            self._load_from_json(accounts)
+    def _load_from_json(self, file):
+        account_data = json.load(file)
+        for data in account_data:
+            self.add(Account(**data))
+
+    def load(self, filename, format='json'):
+        # TODO: test and verify filename
+        file = open(filename, 'r', encoding='utf-8')
+
+        if format == 'json':
+            self._load_from_json(file)
+
+    def _dump_to_json(self, file):
+        account_data = [account.todict() for account in self._data]
+        json.dump(account_data, file)
+
+    def dump(self, filename, format='json'):
+        # TODO: test and verify filename
+        file = open(filename, 'w', encoding='utf-8')
+
+        if format == 'json':
+            self._dump_to_json(file)
